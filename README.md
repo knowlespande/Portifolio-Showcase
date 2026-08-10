@@ -1,2 +1,0 @@
-# Portifolio-Showcase
-My Portifolio
