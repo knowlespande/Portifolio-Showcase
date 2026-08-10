@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masase Secondary School</title>
+<meta name="description" content="Masase Secondary School — official website. Admissions, academics, sports, staff, projects, and the student/parent/teacher portal.">
+
+<!--
+  ============================================================
+  READ THIS FIRST
+  ============================================================
+  This is a single HTML file that behaves like a full multi-page
+  site using JavaScript "views" (Home / Portal / Sports / Staff /
+  Teachers / Projects / Tour) switched by URL hash (#home, #sports,
+  etc.) — so every section has its own shareable link, but nothing
+  needs a server to run.
+
+  THE PORTAL IS A LIVE DEMO, NOT A REAL BACKEND.
+  Login, report creation, and viewing all work for real in your
+  browser right now — but the data lives in memory (a JS object)
+  and resets on page reload. GitHub Pages cannot run a real
+  database or authentication server; that requires a backend
+  (e.g. Firebase Auth + Firestore, or a custom Node.js + database
+  service) hosted separately. Search this file for "BACKEND HOOK"
+  to see exactly where real API calls would replace the demo logic.
+
+  DEMO LOGINS (shown on the portal login screen too):
+    Teacher:  teacher / teacher123
+    Student:  student / student123   (Tinashe Moyo, Form 4A)
+    Parent:   parent  / parent123    (parent of Tinashe Moyo)
+
+  HOW TO CUSTOMIZE
+    - Replace "Masase Secondary School" with your real school name.
+    - Search for [PLACEHOLDER] for names, photos, and copy to replace.
+    - Replace picsum.photos placeholder images with real school photos.
+
+  HOW TO DEPLOY
+    - Push this file (as index.html) to a GitHub repo, enable Pages
+      under Settings → Pages, or use <username>.github.io for a root site.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:            #050B24;
+    --bg-alt:        #081030;
+    --panel:         #0C1638;
+    --panel-hi:      #101E4A;
+    --glass:         rgba(255,255,255,0.045);
+    --glass-hi:      rgba(255,255,255,0.08);
+    --border:        #1E2E5C;
+    --border-hi:     #32488C;
+    --text:          #EAF0FF;
+    --text-dim:      #9AACD6;
+    --text-faint:    #5B6D9C;
+    --blue:          #2F6BFF;
+    --blue-hi:       #5B8CFF;
+    --cyan:          #22D3EE;
+    --gold:          #FFC24B;
+    --danger:        #FF6B6B;
+    --font-display:  'Sora', sans-serif;
+    --font-body:     'Inter', sans-serif;
+    --font-mono:     'JetBrains Mono', monospace;
+    --maxw: 1180px;
+    --radius: 14px;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  img{ max-width:100%; display:block; border-radius:10px; }
+  button{ font-family:inherit; cursor:pointer; }
+  input, select, textarea{ font-family:inherit; }
+
+  ::selection{ background:var(--blue); color:#fff; }
+  :focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:4px; }
+
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 32px; }
+
+  h1,h2,h3,h4{ font-family:var(--font-display); font-weight:700; letter-spacing:-0.01em; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.09em;
+    color:var(--cyan); text-transform:uppercase; display:inline-flex; align-items:center; gap:9px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{ content:''; width:20px; height:1px; background:var(--cyan); }
+
+  .section-title{ font-size:clamp(28px,4vw,42px); margin-bottom:16px; }
+  .section-sub{ color:var(--text-dim); max-width:60ch; margin-bottom:48px; font-size:16px; }
+
+  /* ---------- AURORA BACKDROP (signature element) ---------- */
+  .aurora{
+    position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;
+  }
+  .aurora::before, .aurora::after{
+    content:''; position:absolute; width:70vw; height:70vw; border-radius:50%;
+    filter:blur(90px); opacity:0.35;
+  }
+  .aurora::before{
+    background:radial-gradient(circle, var(--blue) 0%, transparent 70%);
+    top:-25vw; left:-15vw; animation:drift1 26s ease-in-out infinite;
+  }
+  .aurora::after{
+    background:radial-gradient(circle, var(--cyan) 0%, transparent 70%);
+    bottom:-30vw; right:-20vw; animation:drift2 32s ease-in-out infinite;
+  }
+  @keyframes drift1{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(6vw,4vw); } }
+  @keyframes drift2{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(-5vw,-6vw); } }
+  .stars{
+    position:fixed; inset:0; z-index:-1;
+    background-image:radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.35), transparent),
+                      radial-gradient(1.5px 1.5px at 70% 60%, rgba(255,255,255,0.25), transparent),
+                      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3), transparent),
+                      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.25), transparent),
+                      radial-gradient(1.5px 1.5px at 55% 45%, rgba(255,255,255,0.2), transparent),
+                      radial-gradient(1px 1px at 10% 65%, rgba(255,255,255,0.25), transparent);
+    background-size:600px 600px;
+  }
+
+  /* ---------- GLASS COMPONENTS ---------- */
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    backdrop-filter:blur(6px);
+  }
+  .card{
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:26px;
+    transition:transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .card:hover{ transform:translateY(-4px); border-color:var(--border-hi); background:var(--glass-hi); }
+
+  .btn{
+    font-family:var(--font-body); font-weight:600; font-size:14px;
+    padding:13px 26px; border-radius:100px; border:none;
+    display:inline-flex; align-items:center; gap:8px;
+    transition:transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-primary{ background:linear-gradient(135deg, var(--blue), var(--cyan)); color:#fff; box-shadow:0 10px 30px -10px rgba(47,107,255,0.6); }
+  .btn-primary:hover{ box-shadow:0 14px 34px -8px rgba(47,107,255,0.75); }
+  .btn-ghost{ background:var(--glass); border:1px solid var(--border-hi); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .btn-danger{ background:transparent; border:1px solid var(--danger); color:var(--danger); }
+  .btn-danger:hover{ background:var(--danger); color:#fff; }
+  .btn-block{ width:100%; justify-content:center; }
+  .btn-sm{ padding:9px 18px; font-size:13px; }
+
+  .badge{
+    font-family:var(--font-mono); font-size:11px; padding:4px 11px; border-radius:100px;
+    border:1px solid var(--border-hi); color:var(--text-dim); display:inline-block;
+  }
+  .badge-blue{ color:var(--blue-hi); border-color:var(--blue); background:rgba(47,107,255,0.1); }
+  .badge-gold{ color:var(--gold); border-color:var(--gold); background:rgba(255,194,75,0.1); }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:18px; left:0; right:0; z-index:200;
+    display:flex; justify-content:center; padding:0 20px;
+  }
+  nav{
+    max-width:var(--maxw); width:100%;
+    background:rgba(8,13,36,0.75);
+    border:1px solid var(--border);
+    backdrop-filter:blur(14px);
+    border-radius:100px;
+    padding:10px 12px 10px 22px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 20px 50px -25px rgba(0,0,0,0.7);
+  }
+  .logo{ font-family:var(--font-display); font-weight:800; font-size:16px; display:flex; align-items:center; gap:9px; }
+  .logo-mark{
+    width:28px; height:28px; border-radius:8px;
+    background:linear-gradient(135deg, var(--blue), var(--cyan));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:13px; font-weight:700; color:#04102b;
+  }
+  .nav-links{ display:flex; gap:6px; align-items:center; }
+  .nav-links a{
+    font-size:13.5px; color:var(--text-dim); padding:9px 15px; border-radius:100px;
+    transition:color 0.2s ease, background 0.2s ease;
+  }
+  .nav-links a:hover{ color:var(--text); background:var(--glass); }
+  .nav-links a.active{ color:#04102b; background:linear-gradient(135deg, var(--blue), var(--cyan)); font-weight:600; }
+  .nav-toggle{ display:none; background:none; border:none; color:var(--text); font-size:20px; padding:6px 10px; }
+
+  main{ padding-top:140px; }
+  .view{ display:none; animation:fadeIn 0.4s ease; }
+  .view.active{ display:block; }
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+
+  section{ padding:90px 0; }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding:70px 0 100px; text-align:center; }
+  .hero h1{
+    font-size:clamp(38px,6vw,68px); line-height:1.06; margin-bottom:22px;
+    background:linear-gradient(135deg, #fff 30%, var(--cyan) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero p.lede{ font-size:18px; color:var(--text-dim); max-width:60ch; margin:0 auto 38px; }
+  .hero-actions{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-bottom:64px; }
+
+  .stat-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+  }
+  .stat{ background:var(--panel); padding:28px 20px; text-align:center; }
+  .stat b{ display:block; font-family:var(--font-display); font-size:30px; color:var(--cyan); margin-bottom:4px; }
+  .stat span{ font-size:12.5px; color:var(--text-faint); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.04em; }
+
+  /* ---------- GRIDS ---------- */
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+
+  .icon-box{
+    width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(47,107,255,0.25), rgba(34,211,238,0.15));
+    border:1px solid var(--border-hi); margin-bottom:16px; color:var(--cyan);
+  }
+
+  .thumb{ width:100%; aspect-ratio:4/3; object-fit:cover; margin-bottom:16px; border:1px solid var(--border); }
+
+  .avatar{
+    width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:20px; color:#04102b;
+    background:linear-gradient(135deg, var(--blue-hi), var(--cyan)); flex-shrink:0;
+  }
+
+  .divider{ height:1px; background:var(--border); border:none; margin:64px 0; }
+
+  /* ---------- ANNOUNCEMENTS / TIMELINE ---------- */
+  .ann-card{ display:flex; gap:18px; padding:22px 0; border-bottom:1px solid var(--border); }
+  .ann-card:last-child{ border-bottom:none; }
+  .ann-date{
+    font-family:var(--font-mono); font-size:12px; color:var(--cyan); flex-shrink:0; width:90px; padding-top:3px;
+  }
+  .ann-card h4{ font-size:16px; margin-bottom:6px; }
+  .ann-card p{ color:var(--text-dim); font-size:14px; }
+
+  /* ---------- FORMS ---------- */
+  .field{ margin-bottom:18px; }
+  .field label{ display:block; font-size:13px; color:var(--text-dim); margin-bottom:7px; font-family:var(--font-mono); }
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--bg-alt); border:1px solid var(--border); border-radius:9px;
+    padding:12px 14px; color:var(--text); font-size:14px; transition:border-color 0.2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--cyan); outline:none; }
+  .field textarea{ resize:vertical; min-height:80px; }
+  .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  .role-tabs{ display:flex; gap:8px; margin-bottom:26px; background:var(--bg-alt); padding:5px; border-radius:100px; border:1px solid var(--border); }
+  .role-tab{
+    flex:1; text-align:center; padding:10px; border-radius:100px; border:none; background:transparent;
+    color:var(--text-dim); font-size:13.5px; font-weight:600; transition:all 0.2s ease;
+  }
+  .role-tab.active{ background:linear-gradient(135deg, var(--blue), var(--cyan)); color:#04102b; }
+
+  .alert{ padding:12px 16px; border-radius:9px; font-size:13.5px; margin-bottom:18px; border:1px solid; }
+  .alert-error{ background:rgba(255,107,107,0.08); border-color:var(--danger); color:#ffb3b3; }
+  .alert-success{ background:rgba(34,211,238,0.08); border-color:var(--cyan); color:var(--cyan); }
+  .alert-info{ background:rgba(47,107,255,0.08); border-color:var(--blue); color:var(--blue-hi); }
+
+  /* ---------- TABLES ---------- */
+  table{ width:100%; border-collapse:collapse; }
+  th, td{ text-align:left; padding:13px 14px; border-bottom:1px solid var(--border); font-size:13.5px; }
+  th{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); font-weight:500; }
+  td{ color:var(--text-dim); }
+  td.emph{ color:var(--text); font-weight:600; }
+  .grade{
+    font-family:var(--font-mono); font-weight:700; padding:2px 9px; border-radius:5px; font-size:12.5px;
+  }
+  .grade-A{ color:#4ADE80; background:rgba(74,222,128,0.12); }
+  .grade-B{ color:var(--cyan); background:rgba(34,211,238,0.12); }
+  .grade-C{ color:var(--gold); background:rgba(255,194,75,0.12); }
+  .grade-D{ color:#FB923C; background:rgba(251,146,60,0.12); }
+  .grade-F{ color:var(--danger); background:rgba(255,107,107,0.12); }
+
+  .table-wrap{ overflow-x:auto; }
+  .empty-state{ text-align:center; padding:50px 20px; color:var(--text-faint); }
+  .empty-state .icon-box{ margin:0 auto 16px; }
+
+  /* ---------- PORTAL DASHBOARD ---------- */
+  .dash-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:40px; flex-wrap:wrap; gap:16px; }
+  .dash-user{ display:flex; align-items:center; gap:14px; }
+  .dash-user h3{ font-size:17px; }
+  .dash-user p{ font-size:13px; color:var(--text-faint); font-family:var(--font-mono); }
+  .filter-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+  .chip{
+    padding:8px 16px; border-radius:100px; border:1px solid var(--border); background:var(--glass);
+    font-size:13px; color:var(--text-dim); transition:all 0.2s ease;
+  }
+  .chip.active{ border-color:var(--cyan); color:var(--cyan); background:rgba(34,211,238,0.08); }
+
+  /* ---------- FOOTER ---------- */
+  footer{ border-top:1px solid var(--border); padding:60px 0 30px; margin-top:60px; }
+  .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:50px; }
+  .foot-grid h4{ font-size:14px; margin-bottom:16px; color:var(--text); }
+  .foot-grid p, .foot-grid a{ font-size:13.5px; color:var(--text-faint); display:block; margin-bottom:10px; }
+  .foot-grid a:hover{ color:var(--cyan); }
+  .foot-bottom{ text-align:center; font-size:12.5px; color:var(--text-faint); font-family:var(--font-mono); border-top:1px solid var(--border); padding-top:24px; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    .grid-2, .grid-3, .grid-4{ grid-template-columns:1fr 1fr; }
+    .stat-row{ grid-template-columns:1fr 1fr; }
+    .foot-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:680px){
+    .nav-links{
+      position:fixed; top:78px; left:20px; right:20px; flex-direction:column; align-items:stretch;
+      background:rgba(8,13,36,0.97); border:1px solid var(--border); border-radius:16px; padding:10px;
+      display:none; gap:2px;
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{ padding:12px 15px; }
+    .nav-toggle{ display:block; }
+    .grid-2, .grid-3, .grid-4{ grid-template-columns:1fr; }
+    .stat-row{ grid-template-columns:1fr 1fr; }
+    .form-row{ grid-template-columns:1fr; }
+    .foot-grid{ grid-template-columns:1fr; gap:28px; }
+    main{ padding-top:120px; }
+    section{ padding:60px 0; }
+    .dash-header{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"></div>
+<div class="stars"></div>
+
+<header>
+  <nav>
+    <a href="#home" class="logo"><span class="logo-mark">RS</span> Masase Secondary</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" data-view="home">Home</a></li>
+      <li><a href="#tour" data-view="tour">School Tour</a></li>
+      <li><a href="#sports" data-view="sports">Sports</a></li>
+      <li><a href="#teachers" data-view="teachers">Teachers</a></li>
+      <li><a href="#staff" data-view="staff">Staff</a></li>
+      <li><a href="#projects" data-view="projects">Projects</a></li>
+      <li><a href="#portal" data-view="portal" class="badge-blue" style="border-radius:100px;">Portal</a></li>
+    </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= HOME ================= -->
+  <section class="view active" id="view-home">
+    <div class="wrap">
+      <div class="hero">
+        <div class="eyebrow" style="justify-content:center;">Est. 1987 · Harare, Zimbabwe</div>
+        <h1>Excellence is<br>built here.</h1>
+        <p class="lede">
+          Masase Secondary School prepares students in Forms 1 through 6 for academic
+          success, leadership, and life beyond the classroom — through rigorous teaching,
+          competitive sport, and a campus built for the way students actually learn.
+          <!-- [PLACEHOLDER] Replace with your school's real name, location, and mission. -->
+        </p>
+        <div class="hero-actions">
+          <a href="#tour" class="btn btn-primary" data-view="tour">Take the Tour →</a>
+          <a href="#portal" class="btn btn-ghost" data-view="portal">Access Portal</a>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>1,240</b><span>Students</span></div>
+          <div class="stat"><b>96%</b><span>Pass Rate</span></div>
+          <div class="stat"><b>78</b><span>Teaching Staff</span></div>
+          <div class="stat"><b>37</b><span>Years of Excellence</span></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items:start; margin-bottom:20px;">
+        <div>
+          <div class="eyebrow">About Us</div>
+          <h2 class="section-title">A school built around three things.</h2>
+          <p style="color:var(--text-dim); margin-bottom:16px;">
+            <strong style="color:var(--text);">Academics.</strong> A full O-Level and A-Level
+            curriculum taught by subject specialists, with dedicated study periods and exam
+            preparation built into every term.
+          </p>
+          <p style="color:var(--text-dim); margin-bottom:16px;">
+            <strong style="color:var(--text);">Character.</strong> Leadership programs, a
+            student council, and community service requirements that carry through to Form 6.
+          </p>
+          <p style="color:var(--text-dim);">
+            <strong style="color:var(--text);">Competition.</strong> Regional-level sport and
+            a project culture that sends students to national science and robotics fairs most years.
+          </p>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Announcements</div>
+          <div class="ann-card">
+            <div class="ann-date">Aug 03</div>
+            <div><h4>Term 3 opens Monday</h4><p>Reporting day for all forms is 7:00 AM. Full uniform required.</p></div>
+          </div>
+          <div class="ann-card">
+            <div class="ann-date">Jul 28</div>
+            <div><h4>Inter-house athletics results published</h4><p>See the Sports section for the final standings and record times.</p></div>
+          </div>
+          <div class="ann-card">
+            <div class="ann-date">Jul 15</div>
+            <div><h4>Science Fair applications open</h4><p>Form 3–6 students may register a project through their subject teacher.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="eyebrow">Explore</div>
+      <h2 class="section-title">Find what you're looking for</h2>
+      <div class="grid-4">
+        <a href="#tour" data-view="tour" class="card">
+          <div class="icon-box">◎</div>
+          <h3 style="font-size:16px; margin-bottom:6px;">School Tour</h3>
+          <p style="font-size:13.5px; color:var(--text-dim);">Walk through our campus, labs, and facilities.</p>
+        </a>
+        <a href="#sports" data-view="sports" class="card">
+          <div class="icon-box">◈</div>
+          <h3 style="font-size:16px; margin-bottom:6px;">Sports</h3>
+          <p style="font-size:13.5px; color:var(--text-dim);">Teams, fixtures, and achievements.</p>
+        </a>
+        <a href="#teachers" data-view="teachers" class="card">
+          <div class="icon-box">◇</div>
+          <h3 style="font-size:16px; margin-bottom:6px;">Teachers</h3>
+          <p style="font-size:13.5px; color:var(--text-dim);">Meet our subject departments.</p>
+        </a>
+        <a href="#portal" data-view="portal" class="card">
+          <div class="icon-box">▣</div>
+          <h3 style="font-size:16px; margin-bottom:6px;">Student Portal</h3>
+          <p style="font-size:13.5px; color:var(--text-dim);">Login to view or publish reports.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SCHOOL TOUR ================= -->
+  <section class="view" id="view-tour">
+    <div class="wrap">
+      <div class="eyebrow">School Tour</div>
+      <h2 class="section-title">Walk the campus</h2>
+      <p class="section-sub">Six stops across our grounds — from the main teaching block to the boarding houses. [PLACEHOLDER] Replace the images below with real campus photography.</p>
+      <div class="grid-3" id="tourGrid"></div>
+      <div class="card" style="margin-top:32px; text-align:center;">
+        <h3 style="margin-bottom:10px;">Prefer to see it in person?</h3>
+        <p style="color:var(--text-dim); margin-bottom:20px;">Book a guided physical tour with our admissions office.</p>
+        <a href="mailto:admissions@Masase.school" class="btn btn-primary">Book a Visit →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SPORTS ================= -->
+  <section class="view" id="view-sports">
+    <div class="wrap">
+      <div class="eyebrow">Sports</div>
+      <h2 class="section-title">Compete. Improve. Represent.</h2>
+      <p class="section-sub">Every student plays at least one sport per term across six competitive codes.</p>
+      <div class="grid-3" id="sportsGrid" style="margin-bottom:56px;"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="eyebrow">Achievements</div>
+          <div class="ann-card"><div class="ann-date">2026</div><div><h4>Regional Athletics — 1st place</h4><p>Overall champions, Harare Schools Athletics Championship.</p></div></div>
+          <div class="ann-card"><div class="ann-date">2025</div><div><h4>Netball — Provincial finalists</h4><p>Senior team reached the provincial final for the second year running.</p></div></div>
+          <div class="ann-card"><div class="ann-date">2024</div><div><h4>Chess — National top 8</h4><p>U18 team placed in the national top eight schools.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Upcoming Fixtures</div>
+          <table>
+            <thead><tr><th>Date</th><th>Fixture</th><th>Venue</th></tr></thead>
+            <tbody>
+              <tr><td class="emph">Aug 16</td><td>Football vs. St. Andrews</td><td>Home</td></tr>
+              <tr><td class="emph">Aug 23</td><td>Netball vs. Kingsmead</td><td>Away</td></tr>
+              <tr><td class="emph">Sep 02</td><td>Swimming Gala</td><td>Home</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TEACHERS ================= -->
+  <section class="view" id="view-teachers">
+    <div class="wrap">
+      <div class="eyebrow">Teachers</div>
+      <h2 class="section-title">Meet our departments</h2>
+      <p class="section-sub">[PLACEHOLDER] Replace with your real teaching staff, subjects, and department structure.</p>
+      <div class="filter-row" id="deptFilters"></div>
+      <div class="grid-3" id="teachersGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= STAFF ================= -->
+  <section class="view" id="view-staff">
+    <div class="wrap">
+      <div class="eyebrow">Staff</div>
+      <h2 class="section-title">Leadership & support</h2>
+      <p class="section-sub">The people who keep Masase running, beyond the classroom.</p>
+      <div class="eyebrow" style="margin-top:8px;">Leadership Team</div>
+      <div class="grid-3" id="leadershipGrid" style="margin-bottom:48px;"></div>
+      <div class="eyebrow">Support Departments</div>
+      <div class="grid-4" id="supportGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= PROJECTS ================= -->
+  <section class="view" id="view-projects">
+    <div class="wrap">
+      <div class="eyebrow">Projects</div>
+      <h2 class="section-title">What our students are building</h2>
+      <p class="section-sub">Science fair, robotics, and community projects from the last two terms. [PLACEHOLDER] Swap in real student projects.</p>
+      <div class="grid-3" id="projectsGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= PORTAL ================= -->
+  <section class="view" id="view-portal">
+    <div class="wrap" id="portalRoot"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="logo" style="margin-bottom:14px;"><span class="logo-mark">RS</span> Masase Secondary</div>
+        <p>Masase Secondary School<br>P.Bag 233, Masase<br>Midlands, Zimbabwe</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <a href="#tour" data-view="tour">School Tour</a>
+        <a href="#sports" data-view="sports">Sports</a>
+        <a href="#teachers" data-view="teachers">Teachers</a>
+        <a href="#projects" data-view="projects">Projects</a>
+      </div>
+      <div>
+        <h4>Portal</h4>
+        <a href="#portal" data-view="portal">Student Login</a>
+        <a href="#portal" data-view="portal">Teacher Login</a>
+        <a href="#portal" data-view="portal">Parent Login</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="mailto:masasehigh@gmail.com">masasehigh@gmail.com</a>
+        <a href="tel:+263000000000">+263 00 000 0000</a>
+      </div>
+    </div>
+    <div class="foot-bottom">© 2026 Masase Secondary School./div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   DATA — replace with real content, or (for the portal) a real<
+   backend. Everything below is in-memory demo data only.
+   ============================================================ */
+const DATA = {
+  tour: [
+    { name:'Main Teaching Block', desc:'32 classrooms across three floors, all Form 1–6 lessons.', img:1 },
+    { name:'Library & Resource Centre', desc:'12,000 volumes, a digital archive, and a silent study wing.', img:2 },
+    { name:'Science Laboratories', desc:'Dedicated Physics, Chemistry, and Biology labs with prep rooms.', img:3 },
+    { name:'Sports Complex', desc:'Football and athletics field, two netball courts, and a swimming pool.', img:4 },
+    { name:'Auditorium', desc:'600-seat hall for assemblies, exams, and end-of-term events.', img:5 },
+    { name:'Boarding Houses', desc:'Four houses, each with a resident house parent and common room.', img:6 },
+  ],
+  sports: [
+    { name:'Football', icon:'⚽', desc:'Boys and girls teams, Forms 1–6, regional league.' },
+    { name:'Netball', icon:'🏐', desc:'Senior and junior squads, provincial competition.' },
+    { name:'Athletics', icon:'🏃', desc:'Track and field, whole-school inter-house meet each term.' },
+    { name:'Swimming', icon:'🏊', desc:'50m pool, competitive gala twice a year.' },
+    { name:'Chess', icon:'♟', desc:'Club and competitive team, national rankings.' },
+    { name:'Basketball', icon:'🏀', desc:'Boys and girls teams, weekday practice.' },
+  ],
+  departments: ['All','Sciences','Mathematics','Languages','Humanities','Arts & PE'],
+  teachers: [
+    { name:'Mr. N. Pande', subject:'Computer Science', dept:'Sciences' },
+    { name:'Mrs. D. Moyo', subject:'Chemistry', dept:'Sciences' },
+    { name:'Mrs. E. Muyanda', subject:'Physics & Combined Sciences', dept:'Sciences' },
+    { name:'Mr. R. Sanyatwe', subject:'Biology', dept:'Sciences' },
+    { name:'Mr. T. Musengezi', subject:'Chemistry & Combined Sciences', dept:'Sciences' },
+    { name:'Mr. H. Manenge', subject:'Pure Mathematics', dept:'Mathematics' },
+    { name:'Mr. K. Moyo', subject:'Additional Mathematics', dept:'Mathematics' },
+    { name:'Mr. A. Nyeve', subject:'Mathematics', dept:'Mathematics' },
+    { name:'Ms. N. Dlamini', subject:'English Language & Literature', dept:'Languages' },
+    { name:'Mr. D. Zhou', subject:'Shona', dept:'Languages' },
+    { name:'Mr. C. Chiromonye', subject:'History', dept:'Humanities' },
+    { name:'Mrs. N. Gambiza', subject:'History &  Heritage', dept:'Humanities' },
+    { name:'Mr. S. Shumba', subject:'Geography', dept:'Humanities' },
+    { name:'Mrs. C. Chiromonye', subject:'Heritage Studies', dept:'Humanities' },
+    { name:'Mr. A. Zulu', subject:'Art & Design', dept:'Arts & PE' },
+    { name:'Ms. N. Phiri', subject:'Physical Education', dept:'Arts & PE' },
+  ],
+  leadership: [
+    { name:'Mr. A. Masukume', role:'Headmaster' },
+    { name:'Mrs. J. Dube', role:'Deputy Head — Academics' },
+    { name:'Mr. R. Nyoni', role:'Deputy Head — Pastoral' },
+    { name:'Mr. M. Macheza', role:'Bursar' },
+    { name:'Mr. M. Mbiza', role:'Boarding Master' },
+    { name:'Mr. M. Shoko', role:'Head of NTS' },
+    { name:'Mrs. M. Shumba', role:'Accounts Clerk/Officer' },
+  ],
+  support: [
+    { name:'Administration', count:6 },
+    { name:'Library Services', count:3 },
+    { name:'IT & Systems', count:2 },
+    { name:'Grounds & Facilities', count:9 },
+    { name:'Catering', count:7 },
+    { name:'Health & Wellness', count:2 },
+    { name:'Security', count:5 },
+    { name:'Transport', count:4 },
+  ],
+  projects: [
+    { name:'Solar Water Heater Prototype', team:'Form 5 Physics Club', tag:'Science Fair' },
+    { name:'Line-Following Robot', team:'Robotics Club', tag:'Robotics' },
+    { name:'Community Borehole Repair', team:'Form 4 Community Service', tag:'Community' },
+    { name:'School Weather Station', team:'Form 3 Geography', tag:'Science Fair' },
+    { name:'Recycled Plastic Bricks', team:'Environmental Club', tag:'Sustainability' },
+    { name:'Peer Tutoring Program', team:'Student Council', tag:'Community' },
+  ],
+};
+
+// Subjects offered per form — used to build teacher-facing report forms
+const SUBJECTS = ['Mathematics','English','Physics','Chemistry','Biology','History','Geography','Shona','Computer Science','Wood Work','Crop Science','Mathematics - Statistics','','Divinity','Physical Education', 'Combined Science'];
+
+/* ============================================================
+   DEMO ACCOUNTS + IN-MEMORY REPORT STORE
+   BACKEND HOOK: replace ACCOUNTS with a real auth call (e.g.
+   Firebase signInWithEmailAndPassword), and REPORTS with reads/
+   writes to a real database (e.g. Firestore collection "reports").
+   ============================================================ */
+const ACCOUNTS = {
+  teacher: { password:'teacher123', role:'teacher', name:'Mr. N. Pande', subject:'English Language & Literature' },
+  student: { password:'student123', role:'student', name:'Atinzwaishe Shoko', form:'4A', studentId:'STU-2026-014' },
+  parent:  { password:'parent123',  role:'parent',  name:'Mr. & Mrs. Shoko', children:[{ studentId:'STU-2026-014', name:'Tinashe Moyo', form:'4A' }] },
+};
+
+const STUDENT_ROSTER = [
+  { studentId:'STU-2026-014', name:'Tinashe Moyo', form:'4A' },
+  { studentId:'STU-2026-021', name:'Rutendo Chuma', form:'4A' },
+  { studentId:'STU-2026-033', name:'Kudzai Marecha', form:'4A' },
+];
+
+let REPORTS = [
+  { id:1, studentId:'STU-2026-014', studentName:'Tinashe Moyo', subject:'Mathematics', term:'Term 2, 2026', score:78, comment:'Strong grasp of algebra; keep practicing calculus.', teacher:'Mr. K. Moyo', date:'2026-06-20' },
+  { id:2, studentId:'STU-2026-014', studentName:'Tinashe Moyo', subject:'Physics', term:'Term 2, 2026', score:64, comment:'Understands theory well; needs more lab practice.', teacher:'Mr. T. Chikuni', date:'2026-06-21' },
+  { id:3, studentId:'STU-2026-014', studentName:'Tinashe Moyo', subject:'English', term:'Term 2, 2026', score:88, comment:'Excellent essay structure and vocabulary.', teacher:'Mrs. P. Gumbo', date:'2026-06-22' },
+];
+let reportIdCounter = 4;
+
+function gradeFor(score){
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
+  if (score >= 60) return 'C';
+  if (score >= 50) return 'D';
+  return 'F';
+}
+
+let session = null; // BACKEND HOOK: replace with real session/token check on load
+
+/* ============================================================
+   ROUTING
+   ============================================================ */
+const VIEWS = ['home','tour','sports','teachers','staff','projects','portal'];
+
+function navigate(){
+  let hash = (location.hash || '#home').replace('#','');
+  if (!VIEWS.includes(hash)) hash = 'home';
+  VIEWS.forEach(v => {
+    document.getElementById('view-'+v).classList.toggle('active', v === hash);
+  });
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.dataset.view === hash);
+  });
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo({ top:0 });
+  if (hash === 'portal') renderPortal();
+}
+window.addEventListener('hashchange', navigate);
+
+document.getElementById('navToggle').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+/* ============================================================
+   STATIC SECTION RENDERERS
+   ============================================================ */
+function renderTour(){
+  document.getElementById('tourGrid').innerHTML = DATA.tour.map(t => `
+    <div class="card">
+      <img class="thumb" src="https://picsum.photos/seed/Masase${t.img}/500/375" alt="${t.name}" loading="lazy">
+      <h3 style="font-size:16px; margin-bottom:8px;">${t.name}</h3>
+      <p style="font-size:13.5px; color:var(--text-dim);">${t.desc}</p>
+    </div>
+  `).join('');
+}
+
+function renderSports(){
+  document.getElementById('sportsGrid').innerHTML = DATA.sports.map(s => `
+    <div class="card">
+      <div class="icon-box" style="font-size:20px;">${s.icon}</div>
+      <h3 style="font-size:16px; margin-bottom:8px;">${s.name}</h3>
+      <p style="font-size:13.5px; color:var(--text-dim);">${s.desc}</p>
+    </div>
+  `).join('');
+}
+
+let activeDept = 'All';
+function renderTeachers(){
+  document.getElementById('deptFilters').innerHTML = DATA.departments.map(d => `
+    <button class="chip ${d===activeDept?'active':''}" data-dept="${d}">${d}</button>
+  `).join('');
+  document.querySelectorAll('#deptFilters .chip').forEach(btn => {
+    btn.addEventListener('click', () => { activeDept = btn.dataset.dept; renderTeachers(); });
+  });
+  const list = activeDept === 'All' ? DATA.teachers : DATA.teachers.filter(t => t.dept === activeDept);
+  document.getElementById('teachersGrid').innerHTML = list.map(t => `
+    <div class="card" style="display:flex; gap:16px; align-items:center;">
+      <div class="avatar">${initials(t.name)}</div>
+      <div>
+        <h3 style="font-size:15.5px; margin-bottom:4px;">${t.name}</h3>
+        <p style="font-size:13px; color:var(--text-dim); margin-bottom:6px;">${t.subject}</p>
+        <span class="badge">${t.dept}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderStaff(){
+  document.getElementById('leadershipGrid').innerHTML = DATA.leadership.map(p => `
+    <div class="card" style="display:flex; gap:16px; align-items:center;">
+      <div class="avatar">${initials(p.name)}</div>
+      <div><h3 style="font-size:15.5px; margin-bottom:4px;">${p.name}</h3><p style="font-size:13px; color:var(--text-dim);">${p.role}</p></div>
+    </div>
+  `).join('');
+  document.getElementById('supportGrid').innerHTML = DATA.support.map(s => `
+    <div class="card">
+      <h3 style="font-size:15px; margin-bottom:6px;">${s.name}</h3>
+      <p style="font-size:13px; color:var(--text-faint); font-family:var(--font-mono);">${s.count} staff members</p>
+    </div>
+  `).join('');
+}
+
+function renderProjects(){
+  document.getElementById('projectsGrid').innerHTML = DATA.projects.map(p => `
+    <div class="card">
+      <span class="badge badge-gold" style="margin-bottom:14px; display:inline-block;">${p.tag}</span>
+      <h3 style="font-size:16px; margin-bottom:8px;">${p.name}</h3>
+      <p style="font-size:13.5px; color:var(--text-dim);">${p.team}</p>
+    </div>
+  `).join('');
+}
+
+function initials(name){
+  return name.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.)\s*/,'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+
+/* ============================================================
+   PORTAL — login + role dashboards
+   ============================================================ */
+let loginRole = 'teacher';
+let loginError = '';
+
+function renderPortal(){
+  const root = document.getElementById('portalRoot');
+  if (!session){ root.innerHTML = loginTemplate(); bindLogin(); return; }
+  if (session.role === 'teacher') { root.innerHTML = teacherDashTemplate(); bindTeacherDash(); }
+  if (session.role === 'student') { root.innerHTML = studentDashTemplate(session); }
+  if (session.role === 'parent')  { root.innerHTML = parentDashTemplate(); bindParentDash(); }
+}
+
+function loginTemplate(){
+  return `
+    <div style="max-width:440px; margin:0 auto;">
+      <div class="eyebrow" style="justify-content:center;">Portal</div>
+      <h2 class="section-title" style="text-align:center; font-size:30px;">Sign in</h2>
+      <div class="card">
+        <div class="role-tabs">
+          <button class="role-tab ${loginRole==='teacher'?'active':''}" data-role="teacher">Teacher</button>
+          <button class="role-tab ${loginRole==='student'?'active':''}" data-role="student">Student</button>
+          <button class="role-tab ${loginRole==='parent'?'active':''}" data-role="parent">Parent</button>
+        </div>
+        ${loginError ? `<div class="alert alert-error">${loginError}</div>` : ''}
+        <div class="alert alert-info">Demo login — username <strong>${loginRole}</strong>, password <strong>${loginRole}123</strong></div>
+        <form id="loginForm">
+          <div class="field"><label>Username</label><input type="text" id="loginUser" placeholder="${loginRole}" autocomplete="username"></div>
+          <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+          <button type="submit" class="btn btn-primary btn-block">Login →</button>
+        </form>
+      </div>
+      <p style="text-align:center; font-size:12.5px; color:var(--text-faint); margin-top:18px;">
+        Forgot your password? Contact the school office — password resets aren't self-service.
+      </p>
+    </div>
+  `;
+}
+
+function bindLogin(){
+  document.querySelectorAll('.role-tab').forEach(btn => {
+    btn.addEventListener('click', () => { loginRole = btn.dataset.role; loginError=''; renderPortal(); });
+  });
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('loginUser').value.trim().toLowerCase();
+    const pass = document.getElementById('loginPass').value;
+    // BACKEND HOOK: replace this block with a real authentication API call.
+    const acct = ACCOUNTS[loginRole];
+    if (user === loginRole && acct && pass === acct.password){
+      session = { ...acct };
+      loginError = '';
+      renderPortal();
+    } else {
+      loginError = 'Incorrect username or password for this role.';
+      renderPortal();
+    }
+  });
+}
+
+function logout(){ session = null; renderPortal(); }
+
+function dashHeader(roleLabel){
+  return `
+    <div class="dash-header">
+      <div class="dash-user">
+        <div class="avatar">${initials(session.name)}</div>
+        <div><h3>${session.name}</h3><p>${roleLabel}</p></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Log Out</button>
+    </div>
+  `;
+}
+
+function reportRows(reports){
+  if (!reports.length) return `<tr><td colspan="6"><div class="empty-state">No reports published yet.</div></td></tr>`;
+  return reports.map(r => `
+    <tr>
+      <td class="emph">${r.subject}</td>
+      <td>${r.term}</td>
+      <td><span class="grade grade-${gradeFor(r.score)}">${r.score} — ${gradeFor(r.score)}</span></td>
+      <td>${r.comment}</td>
+      <td>${r.teacher}</td>
+      <td style="font-family:var(--font-mono); font-size:12px;">${r.date}</td>
+    </tr>
+  `).join('');
+}
+
+/* ---- Teacher dashboard: create + publish reports ---- */
+function teacherDashTemplate(){
+  const studentOpts = STUDENT_ROSTER.map(s => `<option value="${s.studentId}">${s.name} (${s.form})</option>`).join('');
+  const subjectOpts = SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('');
+  const myReports = REPORTS.filter(r => r.teacher === session.name);
+  return `
+    ${dashHeader('Teacher · ' + session.subject)}
+    <div class="grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="eyebrow">Create Report</div>
+        <h3 style="margin-bottom:18px; font-size:17px;">Publish a result</h3>
+        <form id="reportForm">
+          <div class="field"><label>Student</label><select id="rStudent">${studentOpts}</select></div>
+          <div class="form-row">
+            <div class="field"><label>Subject</label><select id="rSubject">${subjectOpts}</select></div>
+            <div class="field"><label>Term</label><input type="text" id="rTerm" value="Term 3, 2026"></div>
+          </div>
+          <div class="field"><label>Score (0–100)</label><input type="number" id="rScore" min="0" max="100" placeholder="e.g. 82"></div>
+          <div class="field"><label>Comment</label><textarea id="rComment" placeholder="Brief feedback for the student and parent"></textarea></div>
+          <button type="submit" class="btn btn-primary btn-block">Publish Report →</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Published by You</div>
+        <h3 style="margin-bottom:18px; font-size:17px;">Your report history</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Subject</th><th>Term</th><th>Score</th><th>Comment</th><th>Teacher</th><th>Date</th></tr></thead>
+            <tbody>${reportRows(myReports)}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bindTeacherDash(){
+  document.getElementById('reportForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const studentId = document.getElementById('rStudent').value;
+    const student = STUDENT_ROSTER.find(s => s.studentId === studentId);
+    const score = parseInt(document.getElementById('rScore').value, 10);
+    if (isNaN(score) || score < 0 || score > 100){ alert('Enter a score between 0 and 100.'); return; }
+    // BACKEND HOOK: replace this push with a real database write (e.g. Firestore addDoc).
+    REPORTS.push({
+      id: reportIdCounter++,
+      studentId: student.studentId,
+      studentName: student.name,
+      subject: document.getElementById('rSubject').value,
+      term: document.getElementById('rTerm').value,
+      score,
+      comment: document.getElementById('rComment').value || 'No comment provided.',
+      teacher: session.name,
+      date: new Date().toISOString().slice(0,10),
+    });
+    renderPortal();
+  });
+}
+
+/* ---- Student dashboard: view own reports ---- */
+function studentDashTemplate(s){
+  const myReports = REPORTS.filter(r => r.studentId === s.studentId);
+  return `
+    ${dashHeader('Student · Form ' + s.form)}
+    <div class="card">
+      <div class="eyebrow">Your Reports</div>
+      <h3 style="margin-bottom:18px; font-size:17px;">All published results</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Subject</th><th>Term</th><th>Score</th><th>Comment</th><th>Teacher</th><th>Date</th></tr></thead>
+          <tbody>${reportRows(myReports)}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* ---- Parent dashboard: view child's reports ---- */
+let selectedChild = null;
+function parentDashTemplate(){
+  if (!selectedChild) selectedChild = session.children[0].studentId;
+  const childOpts = session.children.map(c => `<option value="${c.studentId}" ${c.studentId===selectedChild?'selected':''}>${c.name} (${c.form})</option>`).join('');
+  const myReports = REPORTS.filter(r => r.studentId === selectedChild);
+  return `
+    ${dashHeader('Parent / Guardian')}
+    <div class="card">
+      <div class="eyebrow">Viewing Reports For</div>
+      <div class="field" style="max-width:320px; margin-bottom:24px;">
+        <select id="childSelect">${childOpts}</select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Subject</th><th>Term</th><th>Score</th><th>Comment</th><th>Teacher</th><th>Date</th></tr></thead>
+          <tbody>${reportRows(myReports)}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function bindParentDash(){
+  document.getElementById('childSelect').addEventListener('change', (e) => {
+    selectedChild = e.target.value; renderPortal();
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderTour();
+renderSports();
+renderTeachers();
+renderStaff();
+renderProjects();
+navigate();
+</script>
+
+</body>
+</html>
